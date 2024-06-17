@@ -63,7 +63,7 @@ def get_source_image(image):
         return image
 
 def get_img_from_txt2img(x):
-    talker_path = Path(paths.script_path) / "outputs"
+    talker_path = Path(shared.cmd_opts.data_dir) / "outputs"
     imgs_from_txt_dir = str(talker_path / "txt2img-images/")
     imgs = glob.glob(imgs_from_txt_dir+'/*/*.png')
     imgs.sort(key=lambda x:os.path.getmtime(os.path.join(imgs_from_txt_dir, x)))
@@ -71,7 +71,7 @@ def get_img_from_txt2img(x):
     return img_from_txt_path, img_from_txt_path
 
 def get_img_from_img2img(x):
-    talker_path = Path(paths.script_path) / "outputs"
+    talker_path = Path(shared.cmd_opts.data_dir) / "outputs"
     imgs_from_img_dir = str(talker_path / "img2img-images/")
     imgs = glob.glob(imgs_from_img_dir+'/*/*.png')
     imgs.sort(key=lambda x:os.path.getmtime(os.path.join(imgs_from_img_dir, x)))
@@ -80,8 +80,8 @@ def get_img_from_img2img(x):
  
 def get_default_checkpoint_path():
     # check the path of models/checkpoints and extensions/
-    checkpoint_path = Path(paths.script_path) / "models"/ "SadTalker" 
-    extension_checkpoint_path = Path(paths.script_path) / "extensions"/ "SadTalker" / "checkpoints"
+    checkpoint_path = Path(shared.cmd_opts.data_dir) / "models"/ "SadTalker" 
+    extension_checkpoint_path = Path(shared.cmd_opts.data_dir) / "extensions"/ "SadTalker" / "checkpoints"
 
     if check_all_files_safetensor(checkpoint_path):
         # print('founding sadtalker checkpoint in ' + str(checkpoint_path))
@@ -98,6 +98,25 @@ def get_default_checkpoint_path():
     if check_all_files(extension_checkpoint_path):
         # print('founding sadtalker checkpoint in ' + str(extension_checkpoint_path))
         return extension_checkpoint_path
+    if shared.cmd_opts.just_ui:
+        checkpoint_path = Path(os.path.dirname(shared.cmd_opts.data_dir)) / "models"/ "SadTalker" 
+        extension_checkpoint_path = Path(os.path.dirname(shared.cmd_opts.data_dir)) / "extensions"/ "SadTalker" / "checkpoints"
+
+        if check_all_files_safetensor(checkpoint_path):
+            # print('founding sadtalker checkpoint in ' + str(checkpoint_path))
+            return checkpoint_path
+
+        if check_all_files_safetensor(extension_checkpoint_path):
+            # print('founding sadtalker checkpoint in ' + str(extension_checkpoint_path))
+            return extension_checkpoint_path
+        
+        if check_all_files(checkpoint_path):
+            # print('founding sadtalker checkpoint in ' + str(checkpoint_path))
+            return checkpoint_path
+
+        if check_all_files(extension_checkpoint_path):
+            # print('founding sadtalker checkpoint in ' + str(extension_checkpoint_path))
+            return extension_checkpoint_path
 
     return None
 
@@ -162,9 +181,11 @@ def install():
 def on_ui_tabs():
     install()
 
-    sys.path.extend([paths.script_path+'/extensions/SadTalker']) 
+    current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+    sys.path.extend([current_dir]) 
     
-    repo_dir = paths.script_path+'/extensions/SadTalker/'
+    repo_dir = os.path.join(current_dir)
 
     result_dir = opts.sadtalker_result_dir
     os.makedirs(result_dir, exist_ok=True)
