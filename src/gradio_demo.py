@@ -33,6 +33,17 @@ class SadTalker():
 
         self.checkpoint_path = checkpoint_path
         self.config_path = config_path
+
+    
+    def convert_path(self, source_image):
+        if source_image is None:
+            return source_image
+        source_name = os.path.basename(source_image)
+        tmp_dir = os.path.join(cmd_opts.data_dir, 'sad_talker_input')
+        if not os.path.exists(tmp_dir):
+            os.makedirs(tmp_dir, exist_ok=True)
+        shutil.copyfile(source_image, os.path.join(tmp_dir, source_name))
+        return os.path.join(tmp_dir, source_name)
       
 
     def test(self, source_image, driven_audio, preprocess='crop', 
@@ -47,8 +58,8 @@ class SadTalker():
 
         if cmd_opts.just_ui:
             req_content = {
-                "source_image": os.path.abspath(source_image), 
-                "driven_audio": os.path.abspath(driven_audio), 
+                "source_image": os.path.abspath(self.convert_path(source_image)), 
+                "driven_audio": os.path.abspath(self.convert_path(driven_audio)), 
                 "preprocess": preprocess, 
                 "still_mode": still_mode,  
                 "use_enhancer": use_enhancer, 
@@ -57,7 +68,7 @@ class SadTalker():
                 "pose_style": pose_style, 
                 "exp_scale": exp_scale, 
                 "use_ref_video": use_ref_video,
-                "ref_video": os.path.abspath(ref_video) if ref_video else None,
+                "ref_video": os.path.abspath(self.convert_path(ref_video)) if ref_video else None,
                 "ref_info": ref_info,
                 "use_idle_mode": use_idle_mode,
                 "length_of_audio": length_of_audio, 
